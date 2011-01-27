@@ -1,0 +1,12 @@
+Bin/
+obj/
+bin/
+ClientBin/
+*.xap
+*.vcproj.*.user
+*.vcproj.user
+*.ncb
+*.aps
+*.suo
+*.csproj.user
+
