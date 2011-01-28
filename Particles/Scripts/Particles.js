@@ -69,22 +69,47 @@ function ImageParticle()
 {
     this.render = function ()
     {
-        var image = new Image();
-
-        //        image.src = "http://javascript-tutorials.googlecode.com/files/jsplatformer1-smiley.jpg";
-        image.src = "Images/flake.png";
-
         ctx.save();
 
-        ctx.drawImage(image, this.x, this.y);
+        ctx.drawImage(particleImage, this.x, this.y);
+
+        ctx.restore();
+    }
+}
+
+function LineParticle()
+{
+    this.render = function ()
+    {
+        ctx.save();
+
+
+        var lineWidth = 1;
+        var lineHeight = 140;
+
+        var gradient1 = ctx.createLinearGradient(this.x, this.y, this.x, this.y + lineHeight);
+
+        gradient1.addColorStop(0, 'transparent');
+        gradient1.addColorStop(0.5, '#000');
+        gradient1.addColorStop(1, 'transparent');
+
+
+        ctx.strokeStyle = gradient1;
+
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, lineHeight + this.y);
+        ctx.stroke();
+
 
         ctx.restore();
     }
 }
 
 
-//ParticleSystem creates an array of RainParticles and updates their attributes
-function ParticleSystem()
+//RainParticleSystem creates an array of RainParticles and updates their attributes
+function RainParticleSystem()
 {
 
     //origin rectangle of the this.particles
@@ -132,7 +157,11 @@ function ParticleSystem()
             }
             else
             {
-                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
+                //                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
+
+                // RMM Changed so particles start flush at the top of the screen
+                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, 0, 0, 1);
+
             }
         }
     }
@@ -147,10 +176,22 @@ function ParticleSystem()
 var ctx;
 var ps;
 
+
+var canvasWidth;
+var canvasHeight;
+
+var cityImage = new Image();
+cityImage.src = "Images/city.png";
+
+var particleImage = new Image();
+particleImage.src = "Images/flake.png";
+
 function draw()
 {
-    ctx.fillStyle = '#00f'; // blue
-    ctx.fillRect(0, 0, 800, 600);
+//    ctx.fillStyle = '#00f'; // blue
+//    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.drawImage(cityImage, 0, 0);
 
 //    ctx.clearRect(0, 0, 800, 600);
     ps.update();
@@ -164,11 +205,23 @@ function Start()
 
     ImageParticle.prototype = new Particle; //inherit from particle
 
-    ctx = document.getElementById("canvas").getContext("2d");
+    var canvas = document.getElementById("canvas");
+
+
+    canvasWidth = $(window).width();
+    canvasHeight = $(window).height();
+
+    $(canvas).attr("height", canvasHeight);
+    $(canvas).attr("width", canvasWidth);
+
+//        ctx.globalCompositeOperation = "lighter";
+
+
+    ctx = canvas.getContext("2d");
 
     setInterval(draw, 100);
-    ps = new ParticleSystem();
-    ps.init(50, 0, 0, 800, 50);
+    ps = new RainParticleSystem();
+    ps.init(50, 0, 0, canvasWidth, 50);
     ps.setParticlesColor("#0099ff");
 
 }
