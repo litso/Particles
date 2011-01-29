@@ -2,7 +2,6 @@
 //The Particle class
 function Particle()
 {
-
     //particle position
     this.x = 0;
     this.y = 0;
@@ -77,33 +76,115 @@ function ImageParticle()
     }
 }
 
+
+function RGBtoHex(R, G, B) { return toHex(R) + toHex(G) + toHex(B) }
+function toHex(N)
+{
+    if (N == null) return "00";
+    N = parseInt(N); if (N == 0 || isNaN(N)) return "00";
+    N = Math.max(0, N); N = Math.min(N, 255); N = Math.round(N);
+    return "0123456789ABCDEF".charAt((N - N % 16) / 16)
+      + "0123456789ABCDEF".charAt(N % 16);
+}
+
 function LineParticle()
 {
+    var maxLineHeight = 140;
+    this.lineHeight = Math.max(maxLineHeight * Math.random(), 60);
+    this.lineWidth = 1;
+
     this.render = function ()
     {
+
+        var myImageData
+
+        myImageData = ctx.getImageData(this.x, this.y, this.lineWidth, this.lineHeight);
+
+        var redComponent = myImageData.data[0];
+        var greenComponent = myImageData.data[1]
+        var blueComponent = myImageData.data[2];
+
         ctx.save();
 
+        ctx.globalCompositeOperation = "darker";
 
-        var lineWidth = 1;
-        var lineHeight = 140;
+        //        var gradient1 = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.lineHeight);
 
-        var gradient1 = ctx.createLinearGradient(this.x, this.y, this.x, this.y + lineHeight);
-
-        gradient1.addColorStop(0, 'transparent');
-        gradient1.addColorStop(0.5, '#000');
-        gradient1.addColorStop(1, 'transparent');
+        //        gradient1.addColorStop(0, 'transparent');
+        //        gradient1.addColorStop(0.5, '#' + RGBtoHex(redComponent, greenComponent, blueComponent));
+        //        gradient1.addColorStop(1, 'transparent');
 
 
-        ctx.strokeStyle = gradient1;
+        //        ctx.strokeStyle = gradient1;
 
-        ctx.lineWidth = lineWidth;
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x, lineHeight + this.y);
-        ctx.stroke();
+        ctx.lineWidth = this.lineWidth;
+
+
+        var numIncrements = 20;
+        var increment = this.lineHeight / numIncrements;
+
+
+        // Pick numIncrements samples
+
+        var colors = new Array();
+
+        var numColorPixels = myImageData.data.length / 4;
+        var colorIncrement = Math.floor(numColorPixels / numIncrements);
+
+        for (var i = 0; i < numColorPixels; i += colorIncrement)
+        {
+            var element = new Array();
+            element[0] = myImageData.data[i * 4];
+            element[1] = myImageData.data[i * 4 + 1];
+            element[2] = myImageData.data[i * 4 + 2];
+
+            element[0] += 20;
+            element[1] += 20;
+            element[2] += 20;
+
+            colors.push(element);
+        }
+
+
+        // Draw the line segments
+
+        for (i = 1; i <= numIncrements; i++)
+        {
+            //redcomponent = myimagedata.data[0 + ((i - 1) * increment)];
+            //greencomponent = myimagedata.data[1 + ((i - 1) * increment)];
+            //bluecomponent = myimagedata.data[2 + ((i - 1) * increment)];
+
+            redComponent = colors[i - 1][0];
+            greenComponent = colors[i - 1][1];
+            blueComponent = colors[i - 1][2];
+
+            //                        if (Math.random() > .5)
+            //                        {
+            //                            redComponent = 0;
+            //                            greenComponent = 0;
+            //                            blueComponent = 255;
+            //                        }
+            //                        else
+            //                        {
+            //                            redComponent = 255;
+            //                            greenComponent = 0;
+            //                            blueComponent = 0;
+            //                        }
+
+            ctx.strokeStyle = 'rgba(' + redComponent + "," + greenComponent + "," + blueComponent + "," + 1.0 + ")";
+
+            ctx.beginPath();
+            ctx.moveTo(this.x, ((i - 1) * increment) + this.y);
+            ctx.lineTo(this.x, i * increment + this.y);
+            ctx.stroke();
+        }
+
+
 
 
         ctx.restore();
+
+        ctx.globalCompositeOperation = "source-over";
     }
 }
 
@@ -133,7 +214,7 @@ function RainParticleSystem()
             //            this.particles.push(new RainParticle());
 
             // RMM
-            this.particles.push(new ImageParticle());
+            this.particles.push(new LineParticle());
             this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1)
         }
     }
@@ -181,7 +262,7 @@ var canvasWidth;
 var canvasHeight;
 
 var cityImage = new Image();
-cityImage.src = "Images/city.png";
+cityImage.src = "Images/city.jpg";
 
 var particleImage = new Image();
 particleImage.src = "Images/flake.png";
@@ -201,9 +282,9 @@ function draw()
 
 function Start()
 {
-    this.RainParticle.prototype = new Particle; //inherit from Particle
-
+    RainParticle.prototype = new Particle; //inherit from Particle
     ImageParticle.prototype = new Particle; //inherit from particle
+    LineParticle.prototype = new Particle; // inherit from Particle
 
     var canvas = document.getElementById("canvas");
 
@@ -214,12 +295,10 @@ function Start()
     $(canvas).attr("height", canvasHeight);
     $(canvas).attr("width", canvasWidth);
 
-//        ctx.globalCompositeOperation = "lighter";
-
-
     ctx = canvas.getContext("2d");
 
-    setInterval(draw, 100);
+    // frame refresh
+    setInterval(draw, 12);
     ps = new RainParticleSystem();
     ps.init(50, 0, 0, canvasWidth, 50);
     ps.setParticlesColor("#0099ff");

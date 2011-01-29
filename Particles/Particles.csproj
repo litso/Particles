@@ -50,8 +50,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\city.png" />
-    <Content Include="Images\city_pic.png" />
+    <Content Include="Images\city.jpg" />
     <Content Include="Images\flake.png" />
     <Content Include="index.htm" />
     <Content Include="Scripts\Particles.js" />
