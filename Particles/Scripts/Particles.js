@@ -100,29 +100,14 @@ function LineParticle()
 
         myImageData = ctx.getImageData(this.x, this.y, this.lineWidth, this.lineHeight);
 
-        var redComponent = myImageData.data[0];
-        var greenComponent = myImageData.data[1]
-        var blueComponent = myImageData.data[2];
-
         ctx.save();
 
         ctx.globalCompositeOperation = "darker";
 
-        //        var gradient1 = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.lineHeight);
-
-        //        gradient1.addColorStop(0, 'transparent');
-        //        gradient1.addColorStop(0.5, '#' + RGBtoHex(redComponent, greenComponent, blueComponent));
-        //        gradient1.addColorStop(1, 'transparent');
-
-
-        //        ctx.strokeStyle = gradient1;
-
         ctx.lineWidth = this.lineWidth;
-
 
         var numIncrements = 20;
         var increment = this.lineHeight / numIncrements;
-
 
         // Pick numIncrements samples
 
@@ -150,26 +135,9 @@ function LineParticle()
 
         for (i = 1; i <= numIncrements; i++)
         {
-            //redcomponent = myimagedata.data[0 + ((i - 1) * increment)];
-            //greencomponent = myimagedata.data[1 + ((i - 1) * increment)];
-            //bluecomponent = myimagedata.data[2 + ((i - 1) * increment)];
-
-            redComponent = colors[i - 1][0];
-            greenComponent = colors[i - 1][1];
-            blueComponent = colors[i - 1][2];
-
-            //                        if (Math.random() > .5)
-            //                        {
-            //                            redComponent = 0;
-            //                            greenComponent = 0;
-            //                            blueComponent = 255;
-            //                        }
-            //                        else
-            //                        {
-            //                            redComponent = 255;
-            //                            greenComponent = 0;
-            //                            blueComponent = 0;
-            //                        }
+            var redComponent = colors[i - 1][0];
+            var greenComponent = colors[i - 1][1];
+            var blueComponent = colors[i - 1][2];
 
             ctx.strokeStyle = 'rgba(' + redComponent + "," + greenComponent + "," + blueComponent + "," + 1.0 + ")";
 
@@ -178,9 +146,6 @@ function LineParticle()
             ctx.lineTo(this.x, i * increment + this.y);
             ctx.stroke();
         }
-
-
-
 
         ctx.restore();
 
