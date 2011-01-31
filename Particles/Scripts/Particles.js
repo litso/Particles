@@ -95,10 +95,17 @@ function LineParticle()
 
     this.render = function ()
     {
+        if (this.x + this.lineWidth > canvasWidth)
+        {
+            return;
+        }
 
-        var myImageData
+        if (this.y + this.lineHeight > canvasHeight)
+        {
+            return;
+        }
 
-        myImageData = ctx.getImageData(this.x, this.y, this.lineWidth, this.lineHeight);
+        var myImageData = ctx.getImageData(this.x, this.y, this.lineWidth, this.lineHeight);
 
         ctx.save();
 
@@ -109,7 +116,7 @@ function LineParticle()
         var numIncrements = 20;
         var increment = this.lineHeight / numIncrements;
 
-        // Pick numIncrements samples
+        // Pick numIncrements color samples
 
         var colors = new Array();
 
@@ -226,11 +233,16 @@ var ps;
 var canvasWidth;
 var canvasHeight;
 
-var cityImage = new Image();
-cityImage.src = "Images/city.jpg";
-
 var particleImage = new Image();
 particleImage.src = "Images/flake.png";
+
+var canvasCopy;
+
+var cityImage = new Image();
+cityImage.src = "Images/city.jpg";
+cityImage.width = 800;
+cityImage.height = 600;
+
 
 function draw()
 {
@@ -239,7 +251,14 @@ function draw()
 
     ctx.drawImage(cityImage, 0, 0);
 
+    if ((canvasCopy.height == 0) || (canvasCopy.width == 0))
+    {
+        alert("Help");
+    }
+
+//    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
 //    ctx.clearRect(0, 0, 800, 600);
+
     ps.update();
     ps.render();
 }
@@ -247,25 +266,52 @@ function draw()
 
 function Start()
 {
+//    var cityImage = document.getElementById("cityImage");
+
+    canvasCopy = document.createElement("canvas");
+    canvasCopy.width = cityImage.width;
+    canvasCopy.height = cityImage.height;
+
+//    $(cityImage).hide();
+
     RainParticle.prototype = new Particle; //inherit from Particle
     ImageParticle.prototype = new Particle; //inherit from particle
     LineParticle.prototype = new Particle; // inherit from Particle
 
     var canvas = document.getElementById("canvas");
 
+    if (false)
+    {
+        // Disable canvas resize
+        canvasWidth = $(window).width();
+        canvasHeight = $(window).height();
 
-    canvasWidth = $(window).width();
-    canvasHeight = $(window).height();
-
-    $(canvas).attr("height", canvasHeight);
-    $(canvas).attr("width", canvasWidth);
+        $(canvas).attr("height", canvasHeight);
+        $(canvas).attr("width", canvasWidth);
+    }
+    else
+    {
+        canvasWidth = $(canvas).width();
+        canvasHeight = $(canvas).height();
+    }
 
     ctx = canvas.getContext("2d");
 
-    // frame refresh
-    setInterval(draw, 12);
+    if ((cityImage.width == 0) || (cityImage.height == 0))
+    {
+        alert("Here");
+    }
+
+    var copyContext = canvasCopy.getContext("2d");
+
+    copyContext.drawImage(cityImage, 0, 0);
+
     ps = new RainParticleSystem();
     ps.init(50, 0, 0, canvasWidth, 50);
     ps.setParticlesColor("#0099ff");
 
+//    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
+
+    // frame refresh
+    setInterval(draw, 48);
 }
