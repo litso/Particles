@@ -129,6 +129,12 @@ function LineParticle()
             }
 
             newHeight += newY;
+            newY = 0;
+        }
+
+        if (newHeight == 0)
+        {
+            return;
         }
 
         var myImageData = ctx.getImageData(newX, newY, this.lineWidth, newHeight);
@@ -148,6 +154,11 @@ function LineParticle()
 
         var numColorPixels = myImageData.data.length / 4;
         var colorIncrement = Math.floor(numColorPixels / numIncrements);
+
+        if (colorIncrement == 0)
+        {
+            return;
+        }
 
         for (var i = 0; i < numColorPixels; i += colorIncrement)
         {
