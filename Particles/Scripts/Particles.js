@@ -93,6 +93,18 @@ function LineParticle()
     this.lineHeight = Math.max(maxLineHeight * Math.random(), 60);
     this.lineWidth = 1;
 
+
+
+    this.setValues = function (x, y, vx, vy)
+    {
+        this.x = x;
+        this.y = this.lineHeight * -1;
+        
+        this.vx = vx; this.vy = vy;
+        this.time = 0;
+        this.life = Math.floor(Math.random() * 50);
+    }
+
     this.render = function ()
     {
         if (this.x + this.lineWidth > canvasWidth)
@@ -105,7 +117,21 @@ function LineParticle()
             return;
         }
 
-        var myImageData = ctx.getImageData(this.x, this.y, this.lineWidth, this.lineHeight);
+        var newX = this.x;
+        var newY = this.y;
+        var newHeight = this.lineHeight;
+
+        if (newY < 0)
+        {
+            if (newHeight + newY < 0)
+            {
+                return;
+            }
+
+            newHeight += newY;
+        }
+
+        var myImageData = ctx.getImageData(newX, newY, this.lineWidth, newHeight);
 
         ctx.save();
 
@@ -114,7 +140,7 @@ function LineParticle()
         ctx.lineWidth = this.lineWidth;
 
         var numIncrements = 20;
-        var increment = this.lineHeight / numIncrements;
+        var increment = newHeight / numIncrements;
 
         // Pick numIncrements color samples
 
@@ -149,8 +175,8 @@ function LineParticle()
             ctx.strokeStyle = 'rgba(' + redComponent + "," + greenComponent + "," + blueComponent + "," + 1.0 + ")";
 
             ctx.beginPath();
-            ctx.moveTo(this.x, ((i - 1) * increment) + this.y);
-            ctx.lineTo(this.x, i * increment + this.y);
+            ctx.moveTo(newX, ((i - 1) * increment) + newY);
+            ctx.lineTo(newX, i * increment + newY);
             ctx.stroke();
         }
 
@@ -249,12 +275,12 @@ function draw()
 //    ctx.fillStyle = '#00f'; // blue
 //    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.drawImage(cityImage, 0, 0);
-
     if ((canvasCopy.height == 0) || (canvasCopy.width == 0))
     {
         alert("Help");
     }
+
+    ctx.drawImage(cityImage, 0, 0);
 
 //    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
 //    ctx.clearRect(0, 0, 800, 600);
@@ -313,5 +339,5 @@ function Start()
 //    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
 
     // frame refresh
-    setInterval(draw, 48);
+    setInterval(draw, 100);
 }
