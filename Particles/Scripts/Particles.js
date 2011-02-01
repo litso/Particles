@@ -22,11 +22,6 @@ function Particle()
         this.life = Math.floor(Math.random() * 50);
     }
 
-    this.setColor = function (color)
-    {
-        this.color = color;
-    }
-
     // renders the particle using the canvas element
     this.render = function ()
     {
@@ -41,59 +36,11 @@ function Particle()
 
 }
 
-// RainParticle inherits from Particle and overloads the render function to draw a drop instead of a circle
-function RainParticle()
-{
-
-    this.render = function ()
-    {
-        var m = 0.9; // particle size
-        ctx.save();
-        ctx.fillStyle = this.color;
-        ctx.translate(this.x, this.y);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(0 * m, 5 * m, 0 * m, 10 * m, 5 * m, 15 * m);
-        ctx.bezierCurveTo(10 * m, 20 * m, 12 * m, 26 * m, 10 * m, 30 * m);
-        ctx.bezierCurveTo(6 * m, 40 * m, -6 * m, 40 * m, -10 * m, 30 * m);
-        ctx.bezierCurveTo(-12 * m, 26 * m, -10 * m, 20 * m, -5 * m, 15 * m);
-        ctx.bezierCurveTo(0 * m, 10 * m, 0 * m, 5 * m, 0 * m, 0 * m);
-        ctx.fill();
-        ctx.restore();
-    }
-
-}
-
-function ImageParticle()
-{
-    this.render = function ()
-    {
-        ctx.save();
-
-        ctx.drawImage(particleImage, this.x, this.y);
-
-        ctx.restore();
-    }
-}
-
-
-function RGBtoHex(R, G, B) { return toHex(R) + toHex(G) + toHex(B) }
-function toHex(N)
-{
-    if (N == null) return "00";
-    N = parseInt(N); if (N == 0 || isNaN(N)) return "00";
-    N = Math.max(0, N); N = Math.min(N, 255); N = Math.round(N);
-    return "0123456789ABCDEF".charAt((N - N % 16) / 16)
-      + "0123456789ABCDEF".charAt(N % 16);
-}
-
 function LineParticle()
 {
     var maxLineHeight = 140;
     this.lineHeight = Math.max(maxLineHeight * Math.random(), 60);
     this.lineWidth = 1;
-
-
 
     this.setValues = function (x, y, vx, vy)
     {
@@ -220,17 +167,9 @@ function RainParticleSystem()
         this.gravity = 1;
         for (var i = 0; i < n; i++)
         {
-            //            this.particles.push(new RainParticle());
-
-            // RMM
             this.particles.push(new LineParticle());
             this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1)
         }
-    }
-
-    this.setParticlesColor = function (color)
-    {
-        for (var i = 0; i < this.particles.length; i++) this.particles[i].setColor(color);
     }
 
     //update the attributes of every particle
@@ -266,53 +205,28 @@ function RainParticleSystem()
 var ctx;
 var ps;
 
-
 var canvasWidth;
 var canvasHeight;
-
-var particleImage = new Image();
-particleImage.src = "Images/flake.png";
-
-var canvasCopy;
 
 var cityImage = new Image();
 cityImage.src = "Images/city.jpg";
 cityImage.width = 800;
 cityImage.height = 600;
 
-
 function draw()
 {
 //    ctx.fillStyle = '#00f'; // blue
 //    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    if ((canvasCopy.height == 0) || (canvasCopy.width == 0))
-    {
-        alert("Help");
-    }
-
     ctx.drawImage(cityImage, 0, 0);
-
-//    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
-//    ctx.clearRect(0, 0, 800, 600);
 
     ps.update();
     ps.render();
 }
 
 
-function Start()
+function StartRain()
 {
-//    var cityImage = document.getElementById("cityImage");
-
-    canvasCopy = document.createElement("canvas");
-    canvasCopy.width = cityImage.width;
-    canvasCopy.height = cityImage.height;
-
-//    $(cityImage).hide();
-
-    RainParticle.prototype = new Particle; //inherit from Particle
-    ImageParticle.prototype = new Particle; //inherit from particle
     LineParticle.prototype = new Particle; // inherit from Particle
 
     var canvas = document.getElementById("canvas");
@@ -334,20 +248,8 @@ function Start()
 
     ctx = canvas.getContext("2d");
 
-    if ((cityImage.width == 0) || (cityImage.height == 0))
-    {
-        alert("Here");
-    }
-
-    var copyContext = canvasCopy.getContext("2d");
-
-    copyContext.drawImage(cityImage, 0, 0);
-
     ps = new RainParticleSystem();
     ps.init(50, 0, 0, canvasWidth, 50);
-    ps.setParticlesColor("#0099ff");
-
-//    ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvasWidth, canvasHeight);
 
     // frame refresh
     setInterval(draw, 100);
