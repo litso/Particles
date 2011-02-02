@@ -1,4 +1,53 @@
-﻿
+﻿var isRaining = false;
+var rainTimeout;
+var Ctx;
+var ps;
+
+var Canvas;
+
+var canvasWidth;
+var canvasHeight;
+
+var cityImage = new Image();
+cityImage.src = "Images/city.jpg";
+cityImage.width = 800;
+cityImage.height = 600;
+
+function rainOffTime()
+{
+    var rainOffPeriod = 10000;
+
+    return rainOffPeriod + (rainOffPeriod * Math.random());
+}
+
+function rainOnTime()
+{
+    var rainOnPeriod = 15000;
+
+    return rainOnPeriod + (rainOnPeriod * Math.random());
+}
+
+function toggleRain()
+{
+    if (rainTimeout)
+    {
+        clearTimeout(rainTimeout);
+        rainTimeout = undefined;
+    }
+
+    if (!isRaining)
+    {
+        // Its not raining... make it rain
+        isRaining = true;
+        rainTimeout = setInterval("toggleRain()", rainOnTime());
+    }
+    else
+    {
+        isRaining = false;
+        rainTimeout = setInterval("toggleRain()", rainOffTime());
+    }
+}
+
 //The Particle base class
 function Particle()
 {
@@ -24,12 +73,12 @@ function Particle()
     // renders the particle using the canvas element
     this.render = function ()
     {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.beginPath();
-        ctx.arc(0, 0, 10, 0, Math.PI * 2, true); // draw a circle
-        ctx.fill();
-        ctx.restore();
+        Ctx.save();
+        Ctx.translate(this.x, this.y);
+        Ctx.beginPath();
+        Ctx.arc(0, 0, 10, 0, Math.PI * 2, true); // draw a circle
+        Ctx.fill();
+        Ctx.restore();
     }
 
 }
@@ -83,13 +132,13 @@ function LineParticle()
             return;
         }
 
-        var myImageData = ctx.getImageData(newX, newY, this.lineWidth, newHeight);
+        var myImageData = Ctx.getImageData(newX, newY, this.lineWidth, newHeight);
 
-        ctx.save();
+        Ctx.save();
 
-        ctx.globalCompositeOperation = "darker";
+        Ctx.globalCompositeOperation = "darker";
 
-        ctx.lineWidth = this.lineWidth;
+        Ctx.lineWidth = this.lineWidth;
 
         var numIncrements = 20;
         var increment = newHeight / numIncrements;
@@ -129,17 +178,17 @@ function LineParticle()
             var greenComponent = colors[i - 1][1];
             var blueComponent = colors[i - 1][2];
 
-            ctx.strokeStyle = 'rgba(' + redComponent + "," + greenComponent + "," + blueComponent + "," + 1.0 + ")";
+            Ctx.strokeStyle = 'rgba(' + redComponent + "," + greenComponent + "," + blueComponent + "," + 1.0 + ")";
 
-            ctx.beginPath();
-            ctx.moveTo(newX, ((i - 1) * increment) + newY);
-            ctx.lineTo(newX, i * increment + newY);
-            ctx.stroke();
+            Ctx.beginPath();
+            Ctx.moveTo(newX, ((i - 1) * increment) + newY);
+            Ctx.lineTo(newX, i * increment + newY);
+            Ctx.stroke();
         }
 
-        ctx.restore();
+        Ctx.restore();
 
-        ctx.globalCompositeOperation = "source-over";
+        Ctx.globalCompositeOperation = "source-over";
     }
 }
 
@@ -190,9 +239,17 @@ function RainParticleSystem()
             }
             else
             {
-                /* set initial x position from between x0 and x1 */
-                /* set initial y position from between -200 and 0 */
-                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
+                if (isRaining)
+                {
+                    /* set initial x position from between x0 and x1 */
+                    /* set initial y position from between -200 and 0 */
+                    this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
+                }
+                else
+                {
+                    /* Knock it off the screen */
+                    this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, -10000, 0, 1);
+                }
             }
         }
     }
@@ -204,52 +261,53 @@ function RainParticleSystem()
 
 };
 
-var ctx;
-var ps;
-
-var canvasWidth;
-var canvasHeight;
-
-var cityImage = new Image();
-cityImage.src = "Images/city.jpg";
-cityImage.width = 800;
-cityImage.height = 600;
-
-function draw()
+// The main drawing routine, here we just draw an image.
+// After we place the rain on top of the image
+function MainDraw()
 {
-    ctx.drawImage(cityImage, 0, 0);
+    Ctx.drawImage(cityImage, 0, 0);
 
-    ps.update();
-    ps.render();
+    if ((canvasHeight != Canvas.height) || (canvasWidth != Canvas.width))
+    {
+        if (isRaining)
+        {
+            // Init rain
+            InitRain();
+        }
+    }
+
+    DrawRain();
 }
 
+function DrawRain()
+{
+    if (ps)
+    {
+        ps.update();
+        ps.render();
+    }
+}
 
-function StartRain()
+// The main initialize routine
+function SetUp()
+{
+    Canvas = document.getElementById("canvas");
+    Ctx = Canvas.getContext("2d");
+
+    // frame refresh
+    setInterval(MainDraw, 24);
+
+    // Set up the rain timer
+    rainTimeout = setTimeout("toggleRain()", rainOffTime());
+}
+
+function InitRain()
 {
     LineParticle.prototype = new Particle; // inherit from Particle
 
-    var canvas = document.getElementById("canvas");
-
-    if (false)
-    {
-        // Disable canvas resize
-        canvasWidth = $(window).width();
-        canvasHeight = $(window).height();
-
-        $(canvas).attr("height", canvasHeight);
-        $(canvas).attr("width", canvasWidth);
-    }
-    else
-    {
-        canvasWidth = $(canvas).width();
-        canvasHeight = $(canvas).height();
-    }
-
-    ctx = canvas.getContext("2d");
+    canvasWidth = Canvas.width;
+    canvasHeight = Canvas.height;
 
     ps = new RainParticleSystem();
-    ps.init(50, 0, -400, canvasWidth, 50);
-
-    // frame refresh
-    setInterval(draw, 200);
+    ps.init(50, 0, -100, canvasWidth, 50);
 }
