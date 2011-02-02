@@ -1,5 +1,5 @@
 ﻿
-//The Particle class
+//The Particle base class
 function Particle()
 {
     //particle position
@@ -12,7 +12,6 @@ function Particle()
 
     this.time = 0; //the time elapsed since the particle was created
     this.life = 0; //the amount of time the particle is going to live
-    this.color = "#000000";
 
     this.setValues = function (x, y, vx, vy)
     {
@@ -26,7 +25,6 @@ function Particle()
     this.render = function ()
     {
         ctx.save();
-        ctx.fillStyle = this.color;
         ctx.translate(this.x, this.y);
         ctx.beginPath();
         ctx.arc(0, 0, 10, 0, Math.PI * 2, true); // draw a circle
@@ -36,6 +34,7 @@ function Particle()
 
 }
 
+// Used to make "steaks" of rain
 function LineParticle()
 {
     var maxLineHeight = 140;
@@ -45,8 +44,8 @@ function LineParticle()
     this.setValues = function (x, y, vx, vy)
     {
         this.x = x;
-        this.y = this.lineHeight * -1;
-        
+        this.y = y;
+
         this.vx = vx; this.vy = vy;
         this.time = 0;
         this.life = Math.floor(Math.random() * 50);
@@ -165,10 +164,15 @@ function RainParticleSystem()
         this.x0 = x0; this.y0 = y0;
         this.x1 = x1; this.y1 = y1;
         this.gravity = 1;
+
         for (var i = 0; i < n; i++)
         {
             this.particles.push(new LineParticle());
-            this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1)
+//            this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
+
+            /* set initial x position from between x0 and x1 */
+            /* set initial y position from between -200 and 0 */
+            this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
         }
     }
 
@@ -186,11 +190,9 @@ function RainParticleSystem()
             }
             else
             {
-                //                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
-
-                // RMM Changed so particles start flush at the top of the screen
-                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, 0, 0, 1);
-
+                /* set initial x position from between x0 and x1 */
+                /* set initial y position from between -200 and 0 */
+                this.particles[i].setValues(Math.floor(Math.random() * this.x1) + this.x0, Math.floor(Math.random() * this.y1) + this.y0, 0, 1);
             }
         }
     }
@@ -215,9 +217,6 @@ cityImage.height = 600;
 
 function draw()
 {
-//    ctx.fillStyle = '#00f'; // blue
-//    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
     ctx.drawImage(cityImage, 0, 0);
 
     ps.update();
@@ -249,8 +248,8 @@ function StartRain()
     ctx = canvas.getContext("2d");
 
     ps = new RainParticleSystem();
-    ps.init(50, 0, 0, canvasWidth, 50);
+    ps.init(50, 0, -400, canvasWidth, 50);
 
     // frame refresh
-    setInterval(draw, 100);
+    setInterval(draw, 200);
 }
