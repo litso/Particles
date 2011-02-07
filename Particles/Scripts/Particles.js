@@ -127,12 +127,25 @@ function LineParticle()
             newY = 0;
         }
 
+        newHeight = Math.floor(newHeight);
+
         if (newHeight == 0)
         {
             return;
         }
 
-        var myImageData = Ctx.getImageData(newX, newY, this.lineWidth, newHeight);
+        var lineBackgroundImageData = new Array();
+
+        for (var j = 0; j < newHeight; j++)
+        {
+            var yVal = newY + j;
+            var index = (newX + ((newY + j) * Canvas.width)) * 4;
+
+            lineBackgroundImageData.push(CanvasData.data[index]);
+            lineBackgroundImageData.push(CanvasData.data[index + 1]);
+            lineBackgroundImageData.push(CanvasData.data[index + 2]);
+            lineBackgroundImageData.push(CanvasData.data[index + 3]);
+        }
 
         Ctx.save();
 
@@ -147,7 +160,7 @@ function LineParticle()
 
         var colors = new Array();
 
-        var numColorPixels = myImageData.data.length / 4;
+        var numColorPixels = lineBackgroundImageData.length / 4;
         var colorIncrement = Math.floor(numColorPixels / numIncrements);
 
         if (colorIncrement == 0)
@@ -158,9 +171,9 @@ function LineParticle()
         for (var i = 0; i < numColorPixels; i += colorIncrement)
         {
             var element = new Array();
-            element[0] = myImageData.data[i * 4];
-            element[1] = myImageData.data[i * 4 + 1];
-            element[2] = myImageData.data[i * 4 + 2];
+            element[0] = lineBackgroundImageData[i * 4];
+            element[1] = lineBackgroundImageData[i * 4 + 1];
+            element[2] = lineBackgroundImageData[i * 4 + 2];
 
             element[0] += 20;
             element[1] += 20;
@@ -168,7 +181,6 @@ function LineParticle()
 
             colors.push(element);
         }
-
 
         // Draw the line segments
 
@@ -279,10 +291,14 @@ function MainDraw()
     DrawRain();
 }
 
+var CanvasData;
+
 function DrawRain()
 {
     if (ps)
     {
+        CanvasData = Ctx.getImageData(0, 0, Canvas.width, Canvas.height);
+
         ps.update();
         ps.render();
     }
